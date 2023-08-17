@@ -1,0 +1,22 @@
+#include "stdio.h"
+#include "string.h"
+void clear (void);
+
+void main (){
+	char string[100];
+	int counter=0 ,i=0 ;
+	printf("Bir cümle girin: ");
+	clear();
+	gets(string);
+	while(string[i] != '\0'){
+		counter++;
+		i++;
+	}
+	printf("Cümle uzunluğu :%d ",counter);
+
+}
+
+void clear (void){
+	fflush(stdin);
+	fflush(stdout);
+}
