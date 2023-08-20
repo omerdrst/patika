@@ -1,0 +1,255 @@
+#include <stdio.h>
+#include <stdlib.h>
+// Kullanıcı verisi
+typedef struct {
+    char isim[50];
+    int hesapNumarasi;
+    double bakiye;
+} Kullanici;
+// Hesap yönetimi 
+void yeniHesapOlustur();
+void hesapGuncelle();
+void hesapSil();
+void bakiyeGoruntule();
+void paraYatir();
+void paraCek();
+
+int main() {
+    int secim;
+
+    while (1) {
+        printf("\n--- Banka Hesap Yonetimi Sistemi ---\n");
+        printf("1. Yeni Hesap Olustur\n");
+        printf("2. Hesap Guncelle\n");
+        printf("3. Hesap Sil\n");
+        printf("4. Bakiye Goruntule\n");
+        printf("5. Para Yatir\n");
+        printf("6. Para Cek\n");
+        printf("7. Cikis\n");
+        printf("Seciminizi yapin: ");
+        scanf("%d", &secim);
+
+        switch (secim) {
+            case 1:
+                yeniHesapOlustur();
+                break;
+            case 2:
+                hesapGuncelle();
+                break;
+            case 3:
+                hesapSil();
+                break;
+            case 4:
+                bakiyeGoruntule();
+                break;
+            case 5:
+                paraYatir();
+                break;
+            case 6:
+                paraCek();
+                break;
+            case 7:
+                printf("Banka Hesap Yonetimi Sisteminden cikiliyor...\n");
+                exit(0);
+            default:
+                printf("Gecersiz secim!\n");
+        }
+    }
+
+    return 0;
+}
+
+void yeniHesapOlustur() {
+    Kullanici kullanici;
+    FILE *dosya;
+
+    dosya = fopen("kullanicilar.txt", "a");
+    if (dosya == NULL) {
+        printf("Dosya acilirken hata olustu!\n");
+        return;
+    }
+
+    printf("Isim: ");
+    scanf("%s", kullanici.isim);
+
+    printf("Hesap Numarasi: ");
+    scanf("%d", &kullanici.hesapNumarasi);
+
+    printf("Baslangic Bakiyesi: ");
+    scanf("%lf", &kullanici.bakiye);
+
+    fprintf(dosya, "%s %d %.2lf\n", kullanici.isim, kullanici.hesapNumarasi, kullanici.bakiye);
+
+    fclose(dosya);
+
+    printf("Yeni hesap olusturuldu!\n");
+}
+
+void hesapGuncelle() {
+    int hesapNumarasi;
+    double yeniBakiye;
+    FILE *dosya, *geciciDosya;
+    Kullanici kullanici;
+
+    dosya = fopen("kullanicilar.txt", "r");
+    geciciDosya = fopen("gecici.txt", "w");
+    if (dosya == NULL || geciciDosya == NULL) {
+        printf("Dosya acilirken hata olustu!\n");
+        return;
+    }
+
+    printf("Hesap Numarasi: ");
+    scanf("%d", &hesapNumarasi);
+
+    while (fscanf(dosya, "%s %d %lf", kullanici.isim, &kullanici.hesapNumarasi, &kullanici.bakiye) != EOF) {
+        if (kullanici.hesapNumarasi == hesapNumarasi) {
+            printf("Yeni Bakiye: ");
+            scanf("%lf", &yeniBakiye);
+
+            kullanici.bakiye = yeniBakiye;
+        }
+
+        fprintf(geciciDosya, "%s %d %.2lf\n", kullanici.isim, kullanici.hesapNumarasi, kullanici.bakiye);
+    }
+
+    fclose(dosya);
+    fclose(geciciDosya);
+
+    remove("kullanicilar.txt");
+    rename("gecici.txt", "kullanicilar.txt");
+
+    printf("Hesap guncellendi!\n");
+}
+
+void hesapSil() {
+    int hesapNumarasi;
+    FILE *dosya, *geciciDosya;
+    Kullanici kullanici;
+
+    dosya = fopen("kullanicilar.txt", "r");
+    geciciDosya = fopen("gecici.txt", "w");
+    if (dosya == NULL || geciciDosya == NULL) {
+        printf("Dosya acilirken hata olustu!\n");
+        return;
+    }
+
+    printf("Hesap Numarasi: ");
+    scanf("%d", &hesapNumarasi);
+
+    while (fscanf(dosya, "%s %d %lf", kullanici.isim, &kullanici.hesapNumarasi, &kullanici.bakiye) != EOF) {
+        if (kullanici.hesapNumarasi != hesapNumarasi) {
+            fprintf(geciciDosya, "%s %d %.2lf\n", kullanici.isim, kullanici.hesapNumarasi, kullanici.bakiye);
+        }
+    }
+
+    fclose(dosya);
+    fclose(geciciDosya);
+
+    remove("kullanicilar.txt");
+    rename("gecici.txt", "kullanicilar.txt");
+
+    printf("Hesap silindi!\n");
+}
+
+void bakiyeGoruntule() {
+    int hesapNumarasi;
+    FILE *dosya;
+    Kullanici kullanici;
+
+    dosya = fopen("kullanicilar.txt", "r");
+    if (dosya == NULL) {
+        printf("Dosya acilirken hata olustu!\n");
+        return;
+    }
+
+    printf("Hesap Numarasi: ");
+    scanf("%d", &hesapNumarasi);
+
+    while (fscanf(dosya, "%s %d %lf", kullanici.isim, &kullanici.hesapNumarasi, &kullanici.bakiye) != EOF) {
+        if (kullanici.hesapNumarasi == hesapNumarasi) {
+            printf("Bakiye: %.2lf\n", kullanici.bakiye);
+            fclose(dosya);
+            return;
+        }
+    }
+
+    printf("Hesap bulunamadi!\n");
+
+    fclose(dosya);
+}
+
+void paraYatir() {
+    int hesapNumarasi;
+    double miktar;
+    FILE *dosya, *geciciDosya;
+    Kullanici kullanici;
+
+    dosya = fopen("kullanicilar.txt", "r");
+    geciciDosya = fopen("gecici.txt", "w");
+    if (dosya == NULL || geciciDosya == NULL) {
+        printf("Dosya acilirken hata olustu!\n");
+        return;
+    }
+
+    printf("Hesap Numarasi: ");
+    scanf("%d", &hesapNumarasi);
+
+    while (fscanf(dosya, "%s %d %lf", kullanici.isim, &kullanici.hesapNumarasi, &kullanici.bakiye) != EOF) {
+        if (kullanici.hesapNumarasi == hesapNumarasi) {
+            printf("Yatirilacak Miktar: ");
+            scanf("%lf", &miktar);
+
+            kullanici.bakiye += miktar;
+        }
+
+        fprintf(geciciDosya, "%s %d %.2lf\n", kullanici.isim, kullanici.hesapNumarasi, kullanici.bakiye);
+    }
+
+    fclose(dosya);
+    fclose(geciciDosya);
+
+    remove("kullanicilar.txt");
+    rename("gecici.txt", "kullanicilar.txt");
+
+    printf("Para yatirildi!\n");
+}
+
+void paraCek() {
+    int hesapNumarasi;
+    double miktar;
+    FILE *dosya, *geciciDosya;
+    Kullanici kullanici;
+
+    dosya = fopen("kullanicilar.txt", "r");
+    geciciDosya = fopen("gecici.txt", "w");
+    if (dosya == NULL || geciciDosya == NULL) {
+        printf("Dosya acilirken hata olustu!\n");
+        return;
+    }
+
+    printf("Hesap Numarasi: ");
+    scanf("%d", &hesapNumarasi);
+
+    while (fscanf(dosya, "%s %d %lf", kullanici.isim, &kullanici.hesapNumarasi, &kullanici.bakiye) != EOF) {
+        if (kullanici.hesapNumarasi == hesapNumarasi) {
+            printf("Cekilecek Miktar: ");
+            scanf("%lf", &miktar);
+
+            if (kullanici.bakiye >= miktar) {
+                kullanici.bakiye -= miktar;
+            } else {
+                printf("Yetersiz bakiye!\n");
+            }
+        }
+
+        fprintf(geciciDosya, "%s %d %.2lf\n", kullanici.isim, kullanici.hesapNumarasi, kullanici.bakiye);
+    }
+
+    fclose(dosya);
+    fclose(geciciDosya);
+
+    remove("kullanicilar.txt");
+    rename("gecici.txt", "kullanicilar.txt");
+
+    printf("Para cekildi!\n");
+}
