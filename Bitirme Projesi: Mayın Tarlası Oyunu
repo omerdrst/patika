@@ -1,0 +1,113 @@
+import java.util.Random;
+import java.util.Scanner;
+
+public class MineSweeper {
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Matris satır sayısını girin: ");
+        int satirSayisi = scanner.nextInt();
+
+        System.out.print("Matris sütun sayısını girin: ");
+        int sutunSayisi = scanner.nextInt();
+
+        int[][] oyunTahtasi = new int[satirSayisi][sutunSayisi];
+        boolean[][] mayinKonumu = new boolean[satirSayisi][sutunSayisi];
+
+        mayinlariYerlestir(mayinKonumu);
+        oyunTahtasiniGoster(oyunTahtasi);
+
+        boolean oyunDevamEdiyor = true;
+
+        while (oyunDevamEdiyor) {
+            System.out.print("Satır seçin: ");
+            int secilenSatir = scanner.nextInt();
+
+            System.out.print("Sütun seçin: ");
+            int secilenSutun = scanner.nextInt();
+
+            if (!gecerliNokta(secilenSatir, secilenSutun, satirSayisi, sutunSayisi)) {
+                System.out.println("Geçersiz bir nokta seçtiniz. Lütfen tekrar deneyin.");
+                continue;
+            }
+
+            if (mayinKonumu[secilenSatir][secilenSutun]) {
+                System.out.println("Mayına bastınız! Oyunu kaybettiniz.");
+                oyunDevamEdiyor = false;
+            } else {
+                int mayinSayisi = mayinSayisiniHesapla(mayinKonumu, secilenSatir, secilenSutun);
+                oyunTahtasi[secilenSatir][secilenSutun] = mayinSayisi;
+                oyunTahtasiniGoster(oyunTahtasi);
+
+                if (oyunTamamlandi(oyunTahtasi, mayinKonumu)) {
+                    System.out.println("Tebrikler! Oyunu kazandınız.");
+                    oyunDevamEdiyor = false;
+                }
+            }
+        }
+
+        scanner.close();
+    }
+
+    private static void mayinlariYerlestir(boolean[][] mayinKonumu) {
+        int mayinSayisi = mayinKonumu.length * mayinKonumu[0].length / 4;
+        Random random = new Random();
+
+        for (int i = 0; i < mayinSayisi; i++) {
+            int satir = random.nextInt(mayinKonumu.length);
+            int sutun = random.nextInt(mayinKonumu[0].length);
+
+            if (!mayinKonumu[satir][sutun]) {
+                mayinKonumu[satir][sutun] = true;
+            } else {
+                i--; // Eğer aynı yere iki kez mayın yerleşirse, tekrar denemek için i'yi azalt
+            }
+        }
+    }
+
+    private static void oyunTahtasiniGoster(int[][] oyunTahtasi) {
+        System.out.println("Oyun Tahtası:");
+        for (int[] satir : oyunTahtasi) {
+            for (int hücre : satir) {
+                System.out.print(hücre + " ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    private static int mayinSayisiniHesapla(boolean[][] mayinKonumu, int satir, int sutun) {
+        int mayinSayisi = 0;
+        int satirLimit = mayinKonumu.length;
+        int sutunLimit = mayinKonumu[0].length;
+
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                int yeniSatir = satir + i;
+                int yeniSutun = sutun + j;
+
+                if (gecerliNokta(yeniSatir, yeniSutun, satirLimit, sutunLimit) && mayinKonumu[yeniSatir][yeniSutun]) {
+                    mayinSayisi++;
+                }
+            }
+        }
+
+        return mayinSayisi;
+    }
+
+    private static boolean oyunTamamlandi(int[][] oyunTahtasi, boolean[][] mayinKonumu) {
+        for (int i = 0; i < oyunTahtasi.length; i++) {
+            for (int j = 0; j < oyunTahtasi[0].length; j++) {
+                if (!mayinKonumu[i][j] && oyunTahtasi[i][j] == 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private static boolean gecerliNokta(int satir, int sutun, int satirLimit, int sutunLimit) {
+        return satir >= 0 && satir < satirLimit && sutun >= 0 && sutun < sutunLimit;
+    }
+}
